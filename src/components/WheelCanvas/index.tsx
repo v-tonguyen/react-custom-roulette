@@ -26,6 +26,7 @@ interface DrawWheelProps {
   prizeMap: number[][];
   rouletteUpdater: boolean;
   textDistance: number;
+  currentPrize: number | null;
 }
 
 const drawRadialBorder = (
@@ -70,6 +71,7 @@ const drawWheel = (
     perpendicularText,
     prizeMap,
     textDistance,
+    currentPrize,
   } = drawWheelProps;
 
   const QUANTITY = getQuantity(prizeMap);
@@ -105,7 +107,31 @@ const drawWheel = (
         (2 * Math.PI) / QUANTITY;
       const endAngle = startAngle + arc;
 
-      ctx.fillStyle = (style && style.backgroundColor) as string;
+      const grd = ctx.createRadialGradient(
+        centerX,
+        centerY,
+        outsideRadius, // Inner radius (center)
+        centerX,
+        centerY,
+        insideRadius // Outer radius
+      );
+
+      if (currentPrize !== null && i === currentPrize) {
+        grd.addColorStop(0, '#03A000');
+        grd.addColorStop(1, '#DAFFCD');
+      } else {
+        grd.addColorStop(
+          0,
+          (style && style.backgroundColorsGradient?.[0]) as string
+        );
+        grd.addColorStop(
+          1,
+          (style && style.backgroundColorsGradient?.[1]) as string
+        );
+      }
+
+      ctx.fillStyle = grd;
+      // ctx.fillStyle = (style && style.backgroundColor) as string;
 
       ctx.beginPath();
       ctx.arc(centerX, centerY, outsideRadius, startAngle, endAngle, false);
@@ -113,6 +139,16 @@ const drawWheel = (
       ctx.stroke();
       ctx.fill();
       ctx.save();
+
+      if (currentPrize !== null && i !== currentPrize) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, outsideRadius, startAngle, endAngle, false);
+        ctx.arc(centerX, centerY, insideRadius, endAngle, startAngle, true);
+        ctx.stroke();
+        ctx.fill();
+        ctx.save();
+      }
 
       // WHEEL RADIUS LINES
       ctx.strokeStyle = radiusLineWidth <= 0 ? 'transparent' : radiusLineColor;
@@ -171,6 +207,7 @@ const drawWheel = (
         centerX + Math.cos(startAngle + arc / 2) * contentRadius,
         centerY + Math.sin(startAngle + arc / 2) * contentRadius
       );
+
       let contentRotationAngle = startAngle + arc / 2;
 
       if (data[i].image) {
@@ -180,6 +217,9 @@ const drawWheel = (
         ctx.rotate(contentRotationAngle);
 
         const img = data[i].image?._imageHTML || new Image();
+        if (currentPrize !== null && i !== currentPrize) {
+          ctx.globalAlpha = 0.5;
+        }
         ctx.drawImage(
           img,
           (img.width + (data[i].image?.offsetX || 0)) / -2,
@@ -236,6 +276,7 @@ const WheelCanvas = ({
   prizeMap,
   rouletteUpdater,
   textDistance,
+  currentPrize,
 }: WheelCanvasProps): JSX.Element => {
   const canvasRef = createRef<HTMLCanvasElement>();
   const drawWheelProps = {
@@ -254,11 +295,18 @@ const WheelCanvas = ({
     prizeMap,
     rouletteUpdater,
     textDistance,
+    currentPrize,
   };
 
   useEffect(() => {
     drawWheel(canvasRef, data, drawWheelProps);
-  }, [canvasRef, data, drawWheelProps, rouletteUpdater]);
+  }, [
+    canvasRef,
+    data,
+    drawWheelProps,
+    rouletteUpdater,
+    drawWheelProps.currentPrize,
+  ]);
 
   return <WheelCanvasStyle ref={canvasRef} width={width} height={height} />;
 };

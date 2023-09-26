@@ -1,17 +1,77 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 
 import { Wheel } from 'react-custom-roulette';
 
 const data = [
-  { option: 'REACT' },
-  { option: 'CUSTOM' },
-  { option: 'ROULETTE', style: { textColor: '#f9dd50' } },
-  { option: 'WHEEL' },
-  { option: 'REACT' },
-  { option: 'CUSTOM' },
-  { option: 'ROULETTE', style: { textColor: '#70bbe0' } },
-  { option: 'WHEEL' },
+  {
+    option: 'REACT',
+    image: {
+      uri:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQRieUz2k7lzPe8b_ByhbWgcc7d2HeL8LrcA&usqp=CAU',
+      sizeMultiplier: 0.55,
+      offsetY: 240,
+    },
+  },
+  {
+    option: 'CUSTOM',
+    image: {
+      uri:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQRieUz2k7lzPe8b_ByhbWgcc7d2HeL8LrcA&usqp=CAU',
+      sizeMultiplier: 0.55,
+      offsetY: 240,
+    },
+  },
+  {
+    option: 'ROULETTE',
+    style: { textColor: '#f9dd50' },
+  },
+  {
+    option: 'WHEEL',
+    image: {
+      uri:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQRieUz2k7lzPe8b_ByhbWgcc7d2HeL8LrcA&usqp=CAU',
+      sizeMultiplier: 0.55,
+      offsetY: 240,
+    },
+  },
+  {
+    option: 'REACT',
+    image: {
+      uri:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQRieUz2k7lzPe8b_ByhbWgcc7d2HeL8LrcA&usqp=CAU',
+      sizeMultiplier: 0.55,
+      offsetY: 240,
+    },
+  },
+  {
+    option: 'CUSTOM',
+    image: {
+      uri:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQRieUz2k7lzPe8b_ByhbWgcc7d2HeL8LrcA&usqp=CAU',
+      sizeMultiplier: 0.55,
+      offsetY: 240,
+    },
+  },
+  {
+    option: 'ROULETTE',
+    style: { textColor: '#70bbe0' },
+    image: {
+      uri:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQRieUz2k7lzPe8b_ByhbWgcc7d2HeL8LrcA&usqp=CAU',
+      sizeMultiplier: 0.55,
+      offsetY: 240,
+    },
+  },
+  {
+    option: 'WHEEL',
+    image: {
+      uri:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQRieUz2k7lzPe8b_ByhbWgcc7d2HeL8LrcA&usqp=CAU',
+      sizeMultiplier: 0.55,
+      offsetY: 240,
+    },
+  },
 ];
 
 const backgroundColors = ['#ff8f43', '#70bbe0', '#0b3351', '#f9dd50'];
@@ -28,17 +88,23 @@ const fontWeight = 'bold';
 const fontSize = 20;
 const fontStyle = 'normal';
 const textDistance = 60;
-const spinDuration = 1.0;
+const spinDuration = 0.4;
 
 const App = () => {
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const handleSpinClick = () => {
-    if (!mustSpin) {
-      const newPrizeNumber = Math.floor(Math.random() * data.length);
-      setPrizeNumber(newPrizeNumber);
-      setMustSpin(true);
+    if (!mustSpin && !loading) {
+      setLoading(true);
+
+      setTimeout(() => {
+        setMustSpin(true);
+        setLoading(false);
+        const newPrizeNumber = Math.floor(Math.random() * data.length);
+        setPrizeNumber(newPrizeNumber);
+      }, 5000);
     }
   };
 
@@ -69,6 +135,8 @@ const App = () => {
           onStopSpinning={() => {
             setMustSpin(false);
           }}
+          disableInitialAnimation={true}
+          pending={loading}
         />
         <button className={'spin-button'} onClick={handleSpinClick}>
           SPIN

@@ -1,4 +1,5 @@
 export const DEFAULT_BACKGROUND_COLORS: string[];
+export const DEFAULT_BACKGROUND_COLORS_GRADIENT: string[][];
 export const DEFAULT_TEXT_COLORS: string[];
 export const DEFAULT_OUTER_BORDER_COLOR: "black";
 export const DEFAULT_OUTER_BORDER_WIDTH: 5;
@@ -14,4 +15,5 @@ export const DEFAULT_FONT_STYLE: "normal";
 export const DEFAULT_TEXT_DISTANCE: 60;
 export const DEFAULT_SPIN_DURATION: 1;
 export const DISABLE_INITIAL_ANIMATION: false;
+export const DEFAULT_LOADING: false;
 export const WEB_FONTS: string[];

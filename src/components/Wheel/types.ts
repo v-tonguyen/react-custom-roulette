@@ -11,6 +11,7 @@ export interface WheelData {
 
 export interface StyleType {
   backgroundColor?: string;
+  backgroundColorsGradient?: string[];
   textColor?: string;
   fontFamily?: string;
   fontSize?: number;

@@ -9,9 +9,9 @@ var drawRadialBorder = function (ctx, centerX, centerY, insideRadius, outsideRad
     ctx.stroke();
 };
 var drawWheel = function (canvasRef, data, drawWheelProps) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g;
     /* eslint-disable prefer-const */
-    var outerBorderColor = drawWheelProps.outerBorderColor, outerBorderWidth = drawWheelProps.outerBorderWidth, innerRadius = drawWheelProps.innerRadius, innerBorderColor = drawWheelProps.innerBorderColor, innerBorderWidth = drawWheelProps.innerBorderWidth, radiusLineColor = drawWheelProps.radiusLineColor, radiusLineWidth = drawWheelProps.radiusLineWidth, fontFamily = drawWheelProps.fontFamily, fontWeight = drawWheelProps.fontWeight, fontSize = drawWheelProps.fontSize, fontStyle = drawWheelProps.fontStyle, perpendicularText = drawWheelProps.perpendicularText, prizeMap = drawWheelProps.prizeMap, textDistance = drawWheelProps.textDistance;
+    var outerBorderColor = drawWheelProps.outerBorderColor, outerBorderWidth = drawWheelProps.outerBorderWidth, innerRadius = drawWheelProps.innerRadius, innerBorderColor = drawWheelProps.innerBorderColor, innerBorderWidth = drawWheelProps.innerBorderWidth, radiusLineColor = drawWheelProps.radiusLineColor, radiusLineWidth = drawWheelProps.radiusLineWidth, fontFamily = drawWheelProps.fontFamily, fontWeight = drawWheelProps.fontWeight, fontSize = drawWheelProps.fontSize, fontStyle = drawWheelProps.fontStyle, perpendicularText = drawWheelProps.perpendicularText, prizeMap = drawWheelProps.prizeMap, textDistance = drawWheelProps.textDistance, currentPrize = drawWheelProps.currentPrize;
     var QUANTITY = getQuantity(prizeMap);
     outerBorderWidth *= 2;
     innerBorderWidth *= 2;
@@ -31,17 +31,38 @@ var drawWheel = function (canvasRef, data, drawWheelProps) {
         var centerX = canvas.width / 2;
         var centerY = canvas.height / 2;
         for (var i = 0; i < data.length; i++) {
-            var _f = data[i], optionSize = _f.optionSize, style = _f.style;
+            var _h = data[i], optionSize = _h.optionSize, style = _h.style;
             var arc = (optionSize && (optionSize * (2 * Math.PI)) / QUANTITY) ||
                 (2 * Math.PI) / QUANTITY;
             var endAngle = startAngle + arc;
-            ctx.fillStyle = (style && style.backgroundColor);
+            var grd = ctx.createRadialGradient(centerX, centerY, outsideRadius, // Inner radius (center)
+            centerX, centerY, insideRadius // Outer radius
+            );
+            if (currentPrize !== null && i === currentPrize) {
+                grd.addColorStop(0, '#03A000');
+                grd.addColorStop(1, '#DAFFCD');
+            }
+            else {
+                grd.addColorStop(0, (style && ((_a = style.backgroundColorsGradient) === null || _a === void 0 ? void 0 : _a[0])));
+                grd.addColorStop(1, (style && ((_b = style.backgroundColorsGradient) === null || _b === void 0 ? void 0 : _b[1])));
+            }
+            ctx.fillStyle = grd;
+            // ctx.fillStyle = (style && style.backgroundColor) as string;
             ctx.beginPath();
             ctx.arc(centerX, centerY, outsideRadius, startAngle, endAngle, false);
             ctx.arc(centerX, centerY, insideRadius, endAngle, startAngle, true);
             ctx.stroke();
             ctx.fill();
             ctx.save();
+            if (currentPrize !== null && i !== currentPrize) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, outsideRadius, startAngle, endAngle, false);
+                ctx.arc(centerX, centerY, insideRadius, endAngle, startAngle, true);
+                ctx.stroke();
+                ctx.fill();
+                ctx.save();
+            }
             // WHEEL RADIUS LINES
             ctx.strokeStyle = radiusLineWidth <= 0 ? 'transparent' : radiusLineColor;
             ctx.lineWidth = radiusLineWidth;
@@ -71,12 +92,15 @@ var drawWheel = function (canvasRef, data, drawWheelProps) {
             if (data[i].image) {
                 // CASE IMAGE
                 contentRotationAngle +=
-                    data[i].image && !((_a = data[i].image) === null || _a === void 0 ? void 0 : _a.landscape) ? Math.PI / 2 : 0;
+                    data[i].image && !((_c = data[i].image) === null || _c === void 0 ? void 0 : _c.landscape) ? Math.PI / 2 : 0;
                 ctx.rotate(contentRotationAngle);
-                var img = ((_b = data[i].image) === null || _b === void 0 ? void 0 : _b._imageHTML) || new Image();
-                ctx.drawImage(img, (img.width + (((_c = data[i].image) === null || _c === void 0 ? void 0 : _c.offsetX) || 0)) / -2, -(img.height -
-                    (((_d = data[i].image) === null || _d === void 0 ? void 0 : _d.landscape) ? 0 : 90) + // offsetY correction for non landscape images
-                    (((_e = data[i].image) === null || _e === void 0 ? void 0 : _e.offsetY) || 0)) / 2, img.width, img.height);
+                var img = ((_d = data[i].image) === null || _d === void 0 ? void 0 : _d._imageHTML) || new Image();
+                if (currentPrize !== null && i !== currentPrize) {
+                    ctx.globalAlpha = 0.5;
+                }
+                ctx.drawImage(img, (img.width + (((_e = data[i].image) === null || _e === void 0 ? void 0 : _e.offsetX) || 0)) / -2, -(img.height -
+                    (((_f = data[i].image) === null || _f === void 0 ? void 0 : _f.landscape) ? 0 : 90) + // offsetY correction for non landscape images
+                    (((_g = data[i].image) === null || _g === void 0 ? void 0 : _g.offsetY) || 0)) / 2, img.width, img.height);
             }
             else {
                 // CASE TEXT
@@ -93,7 +117,7 @@ var drawWheel = function (canvasRef, data, drawWheelProps) {
     }
 };
 var WheelCanvas = function (_a) {
-    var width = _a.width, height = _a.height, data = _a.data, outerBorderColor = _a.outerBorderColor, outerBorderWidth = _a.outerBorderWidth, innerRadius = _a.innerRadius, innerBorderColor = _a.innerBorderColor, innerBorderWidth = _a.innerBorderWidth, radiusLineColor = _a.radiusLineColor, radiusLineWidth = _a.radiusLineWidth, fontFamily = _a.fontFamily, fontWeight = _a.fontWeight, fontSize = _a.fontSize, fontStyle = _a.fontStyle, perpendicularText = _a.perpendicularText, prizeMap = _a.prizeMap, rouletteUpdater = _a.rouletteUpdater, textDistance = _a.textDistance;
+    var width = _a.width, height = _a.height, data = _a.data, outerBorderColor = _a.outerBorderColor, outerBorderWidth = _a.outerBorderWidth, innerRadius = _a.innerRadius, innerBorderColor = _a.innerBorderColor, innerBorderWidth = _a.innerBorderWidth, radiusLineColor = _a.radiusLineColor, radiusLineWidth = _a.radiusLineWidth, fontFamily = _a.fontFamily, fontWeight = _a.fontWeight, fontSize = _a.fontSize, fontStyle = _a.fontStyle, perpendicularText = _a.perpendicularText, prizeMap = _a.prizeMap, rouletteUpdater = _a.rouletteUpdater, textDistance = _a.textDistance, currentPrize = _a.currentPrize;
     var canvasRef = createRef();
     var drawWheelProps = {
         outerBorderColor: outerBorderColor,
@@ -111,10 +135,17 @@ var WheelCanvas = function (_a) {
         prizeMap: prizeMap,
         rouletteUpdater: rouletteUpdater,
         textDistance: textDistance,
+        currentPrize: currentPrize,
     };
     useEffect(function () {
         drawWheel(canvasRef, data, drawWheelProps);
-    }, [canvasRef, data, drawWheelProps, rouletteUpdater]);
+    }, [
+        canvasRef,
+        data,
+        drawWheelProps,
+        rouletteUpdater,
+        drawWheelProps.currentPrize,
+    ]);
     return React.createElement(WheelCanvasStyle, { ref: canvasRef, width: width, height: height });
 };
 export default WheelCanvas;

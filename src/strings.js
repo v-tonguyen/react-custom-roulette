@@ -1,4 +1,8 @@
 export const DEFAULT_BACKGROUND_COLORS = ['darkgrey', 'lightgrey'];
+export const DEFAULT_BACKGROUND_COLORS_GRADIENT = [
+  ['#00364B', '#25C1FF'],
+  ['#0079A9', '#C8EFFF'],
+];
 export const DEFAULT_TEXT_COLORS = ['black'];
 export const DEFAULT_OUTER_BORDER_COLOR = 'black';
 export const DEFAULT_OUTER_BORDER_WIDTH = 5;
@@ -14,6 +18,7 @@ export const DEFAULT_FONT_STYLE = 'normal';
 export const DEFAULT_TEXT_DISTANCE = 60;
 export const DEFAULT_SPIN_DURATION = 1.0;
 export const DISABLE_INITIAL_ANIMATION = false;
+export const DEFAULT_LOADING = false;
 export const WEB_FONTS = [
   'arial',
   'verdana',

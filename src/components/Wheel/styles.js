@@ -24,25 +24,19 @@ export const RotationContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  transform: rotate(${props => props.startRotationDegrees}deg);
+  transform: rotate(${props => props.finalRotationDegrees}deg);
 
   &.started-spinning {
-    animation: spin-${({ classKey }) => classKey} ${({ startSpinningTime }) =>
-          startSpinningTime / 1000}s cubic-bezier(
-          0.71,
-          ${props => (props.disableInitialAnimation ? 0 : -0.29)},
-          0.96,
-          0.9
-        ) 0s 1 normal forwards running,
-      continueSpin-${({ classKey }) => classKey} ${({ continueSpinningTime }) =>
-          continueSpinningTime / 1000}s linear ${({ startSpinningTime }) =>
-          startSpinningTime / 1000}s 1 normal forwards running,
-      stopSpin-${({ classKey }) => classKey} ${({ stopSpinningTime }) =>
-          stopSpinningTime / 1000}s cubic-bezier(0, 0, 0.35, 1.02) ${({
-          startSpinningTime,
-          continueSpinningTime,
-        }) => (startSpinningTime + continueSpinningTime) / 1000}s 1 normal forwards
-        running;
+    animation: continueSpin-${({ classKey }) => classKey} ${({
+        continueSpinningTime,
+      }) => continueSpinningTime / 1000}s linear 0s infinite normal forwards running;
+  }
+
+  &.stop-spinning {
+    animation: stopSpin-${({ classKey }) => classKey} ${({
+        stopSpinningTime,
+      }) => stopSpinningTime / 1000}s cubic-bezier(0, 0, 0.35, 1.02) 0s 1 normal
+      forwards running;
   }
 
   @keyframes spin-${({ classKey }) => classKey} {

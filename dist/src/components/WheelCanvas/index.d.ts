@@ -20,6 +20,7 @@ interface DrawWheelProps {
     prizeMap: number[][];
     rouletteUpdater: boolean;
     textDistance: number;
+    currentPrize: number | null;
 }
-declare const WheelCanvas: ({ width, height, data, outerBorderColor, outerBorderWidth, innerRadius, innerBorderColor, innerBorderWidth, radiusLineColor, radiusLineWidth, fontFamily, fontWeight, fontSize, fontStyle, perpendicularText, prizeMap, rouletteUpdater, textDistance, }: WheelCanvasProps) => JSX.Element;
+declare const WheelCanvas: ({ width, height, data, outerBorderColor, outerBorderWidth, innerRadius, innerBorderColor, innerBorderWidth, radiusLineColor, radiusLineWidth, fontFamily, fontWeight, fontSize, fontStyle, perpendicularText, prizeMap, rouletteUpdater, textDistance, currentPrize, }: WheelCanvasProps) => JSX.Element;
 export default WheelCanvas;

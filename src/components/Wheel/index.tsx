@@ -15,6 +15,7 @@ import {
 } from './styles';
 import {
   DEFAULT_BACKGROUND_COLORS,
+  DEFAULT_BACKGROUND_COLORS_GRADIENT,
   DEFAULT_FONT_FAMILY,
   DEFAULT_FONT_SIZE,
   DEFAULT_FONT_STYLE,
@@ -31,6 +32,7 @@ import {
   DEFAULT_TEXT_DISTANCE,
   WEB_FONTS,
   DISABLE_INITIAL_ANIMATION,
+  DEFAULT_LOADING,
 } from '../../strings';
 import { PointerProps, WheelData } from './types';
 import WheelCanvas from '../WheelCanvas';
@@ -41,6 +43,7 @@ interface Props {
   data: WheelData[];
   onStopSpinning?: () => any;
   backgroundColors?: string[];
+  backgroundColorsGradient?: string[][];
   textColors?: string[];
   outerBorderColor?: string;
   outerBorderWidth?: number;
@@ -59,6 +62,7 @@ interface Props {
   startingOptionIndex?: number;
   pointerProps?: PointerProps;
   disableInitialAnimation?: boolean;
+  pending?: boolean;
 }
 
 const STARTED_SPINNING = 'started-spinning';
@@ -73,6 +77,7 @@ export const Wheel = ({
   data,
   onStopSpinning = () => null,
   backgroundColors = DEFAULT_BACKGROUND_COLORS,
+  backgroundColorsGradient = DEFAULT_BACKGROUND_COLORS_GRADIENT,
   textColors = DEFAULT_TEXT_COLORS,
   outerBorderColor = DEFAULT_OUTER_BORDER_COLOR,
   outerBorderWidth = DEFAULT_OUTER_BORDER_WIDTH,
@@ -91,6 +96,7 @@ export const Wheel = ({
   startingOptionIndex = -1,
   pointerProps = {},
   disableInitialAnimation = DISABLE_INITIAL_ANIMATION,
+  pending = DEFAULT_LOADING,
 }: Props): JSX.Element | null => {
   const [wheelData, setWheelData] = useState<WheelData[]>([...data]);
   const [prizeMap, setPrizeMap] = useState<number[][]>([[0]]);
@@ -105,6 +111,8 @@ export const Wheel = ({
   const [totalImages, setTotalImages] = useState(0);
   const [isFontLoaded, setIsFontLoaded] = useState(false);
   const mustStopSpinning = useRef<boolean>(false);
+  const [currentPrize, setCurrentPrize] = useState<number | null>(null);
+  const [stopTime, setStopTime] = useState(100000);
 
   const classKey = makeClassKey(5);
 
@@ -132,6 +140,9 @@ export const Wheel = ({
       wheelDataAux[i] = {
         ...data[i],
         style: {
+          backgroundColorsGradient:
+            backgroundColorsGradient?.[i % backgroundColorsGradient?.length] ||
+            DEFAULT_BACKGROUND_COLORS_GRADIENT[0],
           backgroundColor:
             data[i].style?.backgroundColor ||
             backgroundColors?.[i % backgroundColors?.length] ||
@@ -205,6 +216,7 @@ export const Wheel = ({
 
   useEffect(() => {
     if (mustStartSpinning && !isCurrentlySpinning) {
+      setCurrentPrize(null);
       setIsCurrentlySpinning(true);
       startSpinning();
       const selectedPrize =
@@ -223,21 +235,33 @@ export const Wheel = ({
     if (hasStoppedSpinning) {
       setIsCurrentlySpinning(false);
       setStartRotationDegrees(finalRotationDegrees);
+      setCurrentPrize(prizeNumber);
     }
   }, [hasStoppedSpinning]);
+
+  useEffect(() => {
+    if (!pending && mustStartSpinning) {
+      setStopTime(0);
+      setTimeout(() => {
+        if (mustStopSpinning.current) {
+          mustStopSpinning.current = false;
+          setHasStartedSpinning(false);
+          setHasStoppedSpinning(true);
+          onStopSpinning();
+        }
+      }, stopSpinningTime);
+    }
+
+    if (pending && !mustStartSpinning) {
+      setStopTime(100000);
+      setCurrentPrize(null);
+    }
+  }, [pending, mustStartSpinning]);
 
   const startSpinning = () => {
     setHasStartedSpinning(true);
     setHasStoppedSpinning(false);
     mustStopSpinning.current = true;
-    setTimeout(() => {
-      if (mustStopSpinning.current) {
-        mustStopSpinning.current = false;
-        setHasStartedSpinning(false);
-        setHasStoppedSpinning(true);
-        onStopSpinning();
-      }
-    }, totalSpinningTime);
   };
 
   const setStartingOption = (optionIndex: number, optionMap: number[][]) => {
@@ -245,14 +269,22 @@ export const Wheel = ({
       const idx = Math.floor(optionIndex) % optionMap?.length;
       const startingOption =
         optionMap[idx][Math.floor(optionMap[idx]?.length / 2)];
-      setStartRotationDegrees(
-        getRotationDegrees(startingOption, getQuantity(optionMap), false)
+      const rotationDefault = getRotationDegrees(
+        startingOption,
+        getQuantity(optionMap),
+        false
       );
+      setStartRotationDegrees(rotationDefault);
+      setFinalRotationDegrees(rotationDefault);
     }
   };
 
   const getRouletteClass = () => {
-    if (hasStartedSpinning) {
+    if (!pending && hasStartedSpinning) {
+      return 'stop-spinning';
+    }
+
+    if (hasStartedSpinning || pending) {
       return STARTED_SPINNING;
     }
     return '';
@@ -280,6 +312,7 @@ export const Wheel = ({
         startRotationDegrees={startRotationDegrees}
         finalRotationDegrees={finalRotationDegrees}
         disableInitialAnimation={disableInitialAnimation}
+        stopTime={stopTime}
       >
         <WheelCanvas
           width="900"
@@ -300,8 +333,10 @@ export const Wheel = ({
           prizeMap={prizeMap}
           rouletteUpdater={rouletteUpdater}
           textDistance={textDistance}
+          currentPrize={currentPrize}
         />
       </RotationContainer>
+
       <RoulettePointerImage
         style={pointerProps?.style}
         src={pointerProps?.src || roulettePointer.src}
